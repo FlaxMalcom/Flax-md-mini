@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>FLAX AI ULTRA</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+margin:0;
+font-family:sans-serif;
+background:linear-gradient(135deg,#141e30,#243b55);
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+color:white;
+}
+
+.container{
+width:420px;
+height:680px;
+background:rgba(255,255,255,0.05);
+backdrop-filter:blur(20px);
+border-radius:25px;
+box-shadow:0 0 50px rgba(0,255,255,0.3);
+display:flex;
+flex-direction:column;
+overflow:hidden;
+}
+
+.header{
+padding:20px;
+text-align:center;
+background:linear-gradient(90deg,#00f2fe,#4facfe);
+color:black;
+font-weight:bold;
+}
+
+.chat{
+flex:1;
+padding:15px;
+overflow-y:auto;
+display:flex;
+flex-direction:column;
+}
+
+.msg{
+margin-bottom:10px;
+padding:10px;
+border-radius:15px;
+max-width:80%;
+}
+
+.user{align-self:flex-end;background:#4facfe;color:black;}
+.bot{align-self:flex-start;background:#111;border:1px solid #00f2fe;}
+
+.input-area{
+display:flex;
+padding:10px;
+background:#111;
+}
+
+input{
+flex:1;
+padding:10px;
+border-radius:20px;
+border:none;
+outline:none;
+background:#222;
+color:white;
+}
+
+button{
+margin-left:5px;
+padding:10px;
+border-radius:20px;
+border:none;
+background:#00f2fe;
+cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<div class="header">🤖 FLAX AI ULTRA</div>
+
+<div class="chat" id="chat"></div>
+
+<div class="input-area">
+<input id="input" placeholder="Ask anything...">
+<button onclick="send()">Send</button>
+<button onclick="voiceInput()">🎙</button>
+</div>
+</div>
+
+<script>
+function add(text,type){
+const chat=document.getElementById("chat");
+const div=document.createElement("div");
+div.className="msg "+type;
+div.innerText=text;
+chat.appendChild(div);
+chat.scrollTop=chat.scrollHeight;
+}
+
+function send(){
+const input=document.getElementById("input");
+let text=input.value.trim();
+if(!text)return;
+add(text,"user");
+input.value="";
+
+fetch("/chat",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({message:text})
+})
+.then(res=>res.json())
+.then(data=>{
+add(data.reply,"bot");
+speak(data.reply);
+});
+}
+
+function voiceInput(){
+let recognition=new(window.SpeechRecognition||window.webkitSpeechRecognition)();
+recognition.onresult=function(event){
+document.getElementById("input").value=event.results[0][0].transcript;
+send();
+};
+recognition.start();
+}
+
+function speak(text){
+let speech=new SpeechSynthesisUtterance(text);
+speech.lang="en-US";
+window.speechSynthesis.speak(speech);
+}
+
+window.onload=function(){
+add("Hi, I am Flax Malcom AI, how can I help you today 🙂","bot");
+};
+</script>
+
+</body>
+</html>
